@@ -11,12 +11,6 @@ type transactionRepository struct {
 	db *pgxpool.Pool
 }
 
-type TransactionRepository interface {
-	Insert(ctx context.Context, transaction *entities.Transaction) (int, error)
-	GetReceivedTransactions(ctx context.Context, userID int) ([]entities.Transaction, error)
-	GetSentTransactions(ctx context.Context, userID int) ([]entities.Transaction, error)
-}
-
 func NewTransactionRepository(db *pgxpool.Pool) TransactionRepository {
 	return &transactionRepository{db: db}
 }

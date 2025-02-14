@@ -10,47 +10,26 @@ import (
 
 var ErrUserDoesNotExist = errors.New("user does not exist")
 
-type UserRepository interface {
-	Insert(ctx context.Context, user *entities.User) error
-	GetByUsername(ctx context.Context, username string) (*entities.User, error)
-	GetByID(ctx context.Context, userID int) (*entities.User, error)
-	//TODO Определится всё таки что прокидывать
-	UpdateBalance(ctx context.Context, userID int, balance int) error
-	//UpdateToken(ctx context.Context, user *entities.User) error
-}
-
 type userRepository struct {
 	db *pgxpool.Pool
 }
 
-// TODO Реализовать
 func (r *userRepository) UpdateBalance(ctx context.Context, userID int, balance int) error {
-	//TODO implement me
-	panic("implement me")
-}
+	commandTag, err := r.db.Exec(ctx, "UPDATE users SET balance = $1 WHERE id = $2", balance, userID)
+	if err != nil {
+		return err
+	}
 
-//func (r *userRepository) UpdateToken(ctx context.Context, user *entities.User) error {
-//	_, err := r.db.Exec(ctx, `
-//		UPDATE users
-//		SET token = $1, token_expires_at = $2
-//		WHERE id = $3
-//	`, user.Token, user.TokenExpiresAt, user.ID)
-//	return err
-//}
+	if commandTag.RowsAffected() == 0 {
+		return ErrUserDoesNotExist
+	}
+
+	return nil
+}
 
 func NewUserRepository(db *pgxpool.Pool) UserRepository {
 	return &userRepository{db: db}
 }
-
-//func (r *userRepository) Insert(ctx context.Context, user *entities.User) error {
-//	query := "INSERT INTO users (username, password, token, token_expires_at) VALUES ($1, $2, $3, $4)"
-//	_, err := r.db.Exec(ctx, query, user.Username, user.Password, user.Token, user.TokenExpiresAt)
-//	if err != nil {
-//		return err
-//	}
-//
-//	return nil
-//}
 
 func (r *userRepository) Insert(ctx context.Context, user *entities.User) error {
 	query := "INSERT INTO users (username, password) VALUES ($1, $2)"

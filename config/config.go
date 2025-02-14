@@ -63,16 +63,5 @@ func NewConfig() (*Config, error) {
 		log.Fatalf("Unable to decode config into struct: %v", err)
 	}
 
-	log.Printf("App Name: %s", cfg.App.Name)
-	log.Printf("App Version: %s", cfg.App.Version)
-	log.Printf("HTTP Port: %s", cfg.HTTP.Port)
-	log.Printf("Postgres URL: %s", cfg.Postgres.URL)
-	log.Printf("Postgres Pool Max: %d", cfg.Postgres.PoolMax)
-	log.Printf("Redis Port: %d", cfg.Redis.Port)
-	log.Printf("Hash Salt: %s", cfg.Auth.HashSalt)
-	log.Printf("Signing Key: %s", cfg.Auth.SigningKey)
-	log.Printf("Token TTL: %s", cfg.Auth.TokenTTL)
-	log.Printf("Log Level: %s", cfg.Logger.LogLevel)
-
 	return cfg, nil
 }

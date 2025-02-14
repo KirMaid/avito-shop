@@ -1,7 +1,9 @@
 package jwt
 
 import (
+	"crypto/sha1"
 	"errors"
+	"fmt"
 	"github.com/golang-jwt/jwt/v5"
 	"time"
 )
@@ -45,4 +47,11 @@ func ValidateToken(tokenString string, signingKey []byte) (string, error) {
 	}
 
 	return "", errors.New("invalid token")
+}
+
+func HashPassword(password, salt string) string {
+	hash := sha1.New()
+	hash.Write([]byte(password))
+	hash.Write([]byte(salt))
+	return fmt.Sprintf("%x", hash.Sum(nil))
 }

@@ -2,13 +2,11 @@ package http
 
 import (
 	"avitoshop/internal/app/entities"
-	"avitoshop/internal/app/usecases"
+	auth "avitoshop/internal/app/usecases/auth"
 	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
-
-const StatusError = "errors"
 
 var ErrInvalidAccessToken = errors.New("invalid auth token")
 var ErrUserDoesNotExist = errors.New("user does not exist")
@@ -19,10 +17,10 @@ type Response struct {
 }
 
 type AuthHandler struct {
-	authUseCase usecases.AuthUseCase
+	authUseCase auth.AuthUseCase
 }
 
-func NewAuthHandler(authUseCase usecases.AuthUseCase) *AuthHandler {
+func NewAuthHandler(authUseCase auth.AuthUseCase) *AuthHandler {
 	return &AuthHandler{authUseCase: authUseCase}
 }
 
@@ -33,6 +31,7 @@ func (ah *AuthHandler) Auth(c *gin.Context) {
 		return
 	}
 
+	//TODO Ебануть сюда проверку на ErrInvalidPassword и 403 статус
 	token, err := ah.authUseCase.Auth(c.Request.Context(), &auth)
 	if err != nil {
 		if errors.Is(err, ErrInvalidAccessToken) || errors.Is(err, ErrUserDoesNotExist) {

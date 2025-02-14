@@ -1,4 +1,4 @@
-package usecase
+package usecases
 
 type UserInfoDTO struct {
 	Coins       int            `json:"coins"`

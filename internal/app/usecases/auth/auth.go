@@ -5,9 +5,7 @@ import (
 	"avitoshop/internal/app/repositories"
 	"avitoshop/pkg/jwt"
 	"context"
-	"crypto/sha1"
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -31,7 +29,7 @@ func NewAuthUseCase(userRepo repositories.UserRepository, hashSalt string, signi
 }
 
 func (auc *AuthUseCase) Auth(ctx context.Context, authData *entities.Auth) (string, error) {
-	hashedPassword := hashPassword(authData.Password, auc.hashSalt)
+	hashedPassword := jwt.HashPassword(authData.Password, auc.hashSalt)
 
 	dbUser, err := auc.userRepo.GetByUsername(ctx, authData.Username)
 	if err != nil {
@@ -45,21 +43,10 @@ func (auc *AuthUseCase) Auth(ctx context.Context, authData *entities.Auth) (stri
 		return "", ErrInvalidPassword
 	}
 
-	//now := time.Now()
-	//if dbUser.Token != "" && dbUser.TokenExpiresAt.After(now) {
-	//	return dbUser.Token, nil
-	//}
-
 	token, err := jwt.GenerateToken(dbUser.Username, auc.expireDuration, auc.signingKey)
 	if err != nil {
 		return "", err
 	}
-
-	//dbUser.Token = token
-	//dbUser.TokenExpiresAt = now.Add(auc.expireDuration)
-	//if err := auc.userRepo.UpdateToken(ctx, dbUser); err != nil {
-	//	return "", err
-	//}
 
 	return token, nil
 }
@@ -75,18 +62,8 @@ func (auc *AuthUseCase) Register(ctx context.Context, username string, hashedPas
 		return "", err
 	}
 
-	//user.Token = token
-	//user.TokenExpiresAt = time.Now().Add(auc.expireDuration)
-
 	if err := auc.userRepo.Insert(ctx, user); err != nil {
 		return "", err
 	}
 	return token, nil
-}
-
-func hashPassword(password, salt string) string {
-	hash := sha1.New()
-	hash.Write([]byte(password))
-	hash.Write([]byte(salt))
-	return fmt.Sprintf("%x", hash.Sum(nil))
 }

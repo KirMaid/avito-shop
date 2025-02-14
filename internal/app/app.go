@@ -5,8 +5,9 @@ import (
 	"avitoshop/internal/app/handlers/http"
 	"avitoshop/internal/app/middleware"
 	"avitoshop/internal/app/repositories"
-	"avitoshop/internal/app/usecases"
-	usecase "avitoshop/internal/app/usecases/user_info"
+	auth "avitoshop/internal/app/usecases/auth"
+	sendcoins "avitoshop/internal/app/usecases/send_coins"
+	userinfo "avitoshop/internal/app/usecases/user_info"
 	"avitoshop/pkg/httpserver"
 	"avitoshop/pkg/logger"
 	"avitoshop/pkg/postgres"
@@ -26,23 +27,23 @@ func Run(cfg *config.Config) {
 	}
 
 	userRepo := repositories.NewUserRepository(pg.Pool)
-	coinHistoryRepo := repositories.NewCoinHistoryRepository(pg.Pool)
 	inventoryRepo := repositories.NewInventoryRepository(pg.Pool)
 	transactionRepo := repositories.NewTransactionRepository(pg.Pool)
 
 	expireDuration, _ := time.ParseDuration(cfg.Auth.TokenTTL)
-	authUseCase := usecases.NewAuthUseCase(
+	authUseCase := auth.NewAuthUseCase(
 		userRepo,
 		cfg.Auth.HashSalt,
 		[]byte(cfg.Auth.SigningKey),
 		expireDuration,
 	)
-	userInfoUseCase := usecase.NewUserInfoUseCase(userRepo, coinHistoryRepo, inventoryRepo, transactionRepo)
+	userInfoUseCase := userinfo.NewUserInfoUseCase(userRepo, inventoryRepo, transactionRepo)
+	sendCoinsUseCase := sendcoins.NewSendCoinsUseCase(userRepo, transactionRepo)
 
 	authMiddleware := middleware.AuthMiddleware([]byte(cfg.Auth.SigningKey))
 
 	handler := gin.New()
-	http.NewRouter(handler, l, authMiddleware, *authUseCase, *userInfoUseCase)
+	http.NewRouter(handler, l, authMiddleware, *authUseCase, *userInfoUseCase, *sendCoinsUseCase)
 
 	httpServer := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 

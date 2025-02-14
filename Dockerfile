@@ -1,16 +1,3 @@
-#FROM golang:1.22
-#
-#WORKDIR ${GOPATH}/avito-shop/
-#COPY . ${GOPATH}/avito-shop/
-#
-#RUN go build -o /build ./cmd/app \
-#    && go clean -cache -modcache
-#
-#EXPOSE 8080
-#
-#CMD ["/build"]
-
-
 # Step 1: Modules caching
 FROM golang:1.24 as modules
 COPY go.mod go.sum /modules/

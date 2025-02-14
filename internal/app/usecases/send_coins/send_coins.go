@@ -11,27 +11,29 @@ import (
 type SendCoinsUseCase struct {
 	userRepo        repositories.UserRepository
 	transactionRepo repositories.TransactionRepository
-	coinHistoryRepo repositories.CoinHistoryRepository
 }
 
 func NewSendCoinsUseCase(
 	userRepo repositories.UserRepository,
 	transactionRepo repositories.TransactionRepository,
-	coinHistoryRepo repositories.CoinHistoryRepository,
 ) *SendCoinsUseCase {
 	return &SendCoinsUseCase{
 		userRepo:        userRepo,
 		transactionRepo: transactionRepo,
-		coinHistoryRepo: coinHistoryRepo,
 	}
 }
 
-func (uc *SendCoinsUseCase) SendCoins(ctx context.Context, senderID int, toUsername string, amount int) error {
+func (uc *SendCoinsUseCase) SendCoins(
+	ctx context.Context,
+	senderUsername string,
+	receiverUsername string,
+	amount int,
+) error {
 	if amount <= 0 {
 		return errors.New("amount must be positive")
 	}
 
-	sender, err := uc.userRepo.GetByID(ctx, senderID)
+	sender, err := uc.userRepo.GetByUsername(ctx, senderUsername)
 	if err != nil {
 		return fmt.Errorf("failed to get sender: %w", err)
 	}
@@ -40,7 +42,7 @@ func (uc *SendCoinsUseCase) SendCoins(ctx context.Context, senderID int, toUsern
 		return errors.New("insufficient funds")
 	}
 
-	receiver, err := uc.userRepo.GetByUsername(ctx, toUsername)
+	receiver, err := uc.userRepo.GetByUsername(ctx, receiverUsername)
 	if err != nil {
 		return fmt.Errorf("failed to get receiver: %w", err)
 	}
@@ -62,25 +64,6 @@ func (uc *SendCoinsUseCase) SendCoins(ctx context.Context, senderID int, toUsern
 	newReceiverBalance := receiver.Balance + amount
 	if err := uc.userRepo.UpdateBalance(ctx, receiver.ID, newReceiverBalance); err != nil {
 		return fmt.Errorf("failed to update receiver balance: %w", err)
-	}
-
-	senderHistory := &entities.CoinHistory{
-		UserID:        sender.ID,
-		ChangeAmount:  -amount,
-		OperationType: "send",
-	}
-	if _, err := uc.coinHistoryRepo.Insert(ctx, senderHistory); err != nil {
-		return fmt.Errorf("failed to record sender history: %w", err)
-	}
-
-	// TODO receive вынести в константы в модели
-	receiverHistory := &entities.CoinHistory{
-		UserID:        receiver.ID,
-		ChangeAmount:  amount,
-		OperationType: "receive",
-	}
-	if _, err := uc.coinHistoryRepo.Insert(ctx, receiverHistory); err != nil {
-		return fmt.Errorf("failed to record receiver history: %w", err)
 	}
 
 	return nil

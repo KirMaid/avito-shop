@@ -1,4 +1,4 @@
-package usecase
+package usecases
 
 import (
 	"avitoshop/internal/app/repositories"
@@ -8,32 +8,29 @@ import (
 
 type UserInfoUseCase struct {
 	userRepo        repositories.UserRepository
-	coinHistoryRepo repositories.CoinHistoryRepository
 	inventoryRepo   repositories.InventoryRepository
 	transactionRepo repositories.TransactionRepository
 }
 
 func NewUserInfoUseCase(
 	userRepo repositories.UserRepository,
-	coinHistoryRepo repositories.CoinHistoryRepository,
 	inventoryRepo repositories.InventoryRepository,
 	transactionRepo repositories.TransactionRepository,
 ) *UserInfoUseCase {
 	return &UserInfoUseCase{
 		userRepo:        userRepo,
-		coinHistoryRepo: coinHistoryRepo,
 		inventoryRepo:   inventoryRepo,
 		transactionRepo: transactionRepo,
 	}
 }
 
-func (s *UserInfoUseCase) GetInfo(ctx context.Context, userID int) (*UserInfoDTO, error) {
-	user, err := s.userRepo.GetByID(ctx, userID)
+func (s *UserInfoUseCase) GetInfo(ctx context.Context, username string) (*UserInfoDTO, error) {
+	user, err := s.userRepo.GetByUsername(ctx, username)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
 
-	inventoryEntities, err := s.inventoryRepo.Get(ctx, userID)
+	inventoryEntities, err := s.inventoryRepo.GetByUser(ctx, user.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get inventory: %w", err)
 	}
@@ -46,7 +43,7 @@ func (s *UserInfoUseCase) GetInfo(ctx context.Context, userID int) (*UserInfoDTO
 		})
 	}
 
-	receivedEntities, err := s.transactionRepo.GetReceivedTransactions(ctx, userID)
+	receivedEntities, err := s.transactionRepo.GetReceivedTransactions(ctx, user.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get received transactions: %w", err)
 	}
@@ -59,7 +56,7 @@ func (s *UserInfoUseCase) GetInfo(ctx context.Context, userID int) (*UserInfoDTO
 		})
 	}
 
-	sentEntities, err := s.transactionRepo.GetSentTransactions(ctx, userID)
+	sentEntities, err := s.transactionRepo.GetSentTransactions(ctx, user.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get sent transactions: %w", err)
 	}
