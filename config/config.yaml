@@ -1,0 +1,17 @@
+app:
+  name: 'avito-shop'
+  version: '1.0.0'
+
+http:
+  port: '8080'
+
+logger:
+  log_level: 'debug'
+
+postgres:
+  pool_max: 2
+
+auth:
+  hash_salt: 'test_salt'
+  signing_key: 'my_super_secret_key'
+  token_ttl: 24h

@@ -2,44 +2,59 @@ version: '3.8'
 
 services:
   avito-shop-service:
-      build: .
-      container_name: avito-shop-service
-      ports:
-        - "8080:8080"
-      environment:
-        # енвы подключения к БД
-        - DATABASE_PORT=5432
-        - DATABASE_USER=postgres
-        - DATABASE_PASSWORD=password
-        - DATABASE_NAME=shop
-        - DATABASE_HOST=db
-        # порт сервиса
-        - SERVER_PORT=8080
-      depends_on:
-        db:
-            condition: service_healthy
-      networks:
-        - internal
-  
-  db:
-    image: postgres:13
-    container_name: postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: shop
-    volumes:
-      # "./migrations/init.sql" - путь к миграциям БД
-      - ./migrations/init.sql:/docker-entrypoint-initdb.d/init.sql
+    build: .
+    container_name: avito-shop-service
     ports:
-      - "5432:5432"
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    environment:
+      - DATABASE_PORT=${POSTGRES_PORT}
+      - DATABASE_USER=${POSTGRES_USER}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_NAME=${POSTGRES_NAME}
+      - DATABASE_HOST=${POSTGRES_HOST}
+      - DATABASE_URL=${POSTGRES_URL}
+      - SERVER_PORT=${SERVER_PORT}
+      - REDIS_HOST=redis
+      - REDIS_PORT=${REDIS_PORT}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+
+  db:
+    image: postgres:latest
+    container_name: postgres
+    ports:
+      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_NAME}
     healthcheck:
-      test: ["CMD-SHELL", "sh -c 'pg_isready -U postgres -d shop'"]
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_NAME}'" ]
       interval: 5s
       timeout: 10s
       retries: 5
       start_period: 10s
     networks:
       - internal
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "${REDIS_PORT}:${REDIS_PORT}"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
+    networks:
+      - internal
+
 networks:
   internal:

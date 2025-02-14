@@ -1,0 +1,32 @@
+run:
+  timeout: 5m
+  modules-download-mode: readonly
+
+linters:
+  enable:
+    - golint
+    - gofmt
+    - goimports
+    - errcheck
+    - staticcheck
+    - unused
+    - gosimple
+    - govet
+    - ineffassign
+    - typecheck
+    - bodyclose
+    - gocritic
+    - gocyclo
+    - godot
+    - gosec
+    - misspell
+    - prealloc
+    - scopelint
+    - stylecheck
+    - unconvert
+    - whitespace
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
