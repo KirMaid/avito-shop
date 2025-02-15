@@ -17,19 +17,19 @@ func NewUserInfoHandler(userInfoUseCase userinfo.UserInfoUseCase) *UserInfoHandl
 func (uih *UserInfoHandler) GetInfo(c *gin.Context) {
 	usernameInterface, exists := c.Get("username")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"errors": "username not found in context"})
+		c.JSON(http.StatusUnauthorized, gin.H{StatusError: ErrUsernameNotFoundInContext})
 		return
 	}
 
 	username, ok := usernameInterface.(string)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"errors": "username is not a string"})
+		c.JSON(http.StatusInternalServerError, gin.H{StatusError: ErrUsernameInvalidFormat})
 		return
 	}
 
 	userInfoDTO, err := uih.userInfoUseCase.GetInfo(c.Request.Context(), username)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"errors": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{StatusError: err.Error()})
 		return
 	}
 

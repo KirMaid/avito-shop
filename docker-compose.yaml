@@ -1,9 +1,9 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  avito-shop-service:
+  app:
     build: .
-    container_name: avito-shop-service
+    container_name: app
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
     environment:
@@ -17,15 +17,17 @@ services:
       - REDIS_HOST=redis
       - REDIS_PORT=${REDIS_PORT}
     depends_on:
-      db:
+      postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
-    networks:
-      - internal
+#      rabbitmq:
+#        condition: service_healthy
 
-  db:
+  postgres:
     image: postgres:latest
+    volumes:
+      - pg-data:/var/lib/postgresql/data
     container_name: postgres
     ports:
       - "${POSTGRES_PORT}:${POSTGRES_PORT}"
@@ -39,22 +41,42 @@ services:
       timeout: 10s
       retries: 5
       start_period: 10s
-    networks:
-      - internal
+
+#  rabbitmq:
+#    container_name: rabbitmq
+#    image: rabbitmq:management-alpine
+#    ports:
+#      - 5672:5672
+#      - 15672:15672
+#    healthcheck:
+#      test: [ "CMD", "rabbitmqctl", "status" ]
+#      interval: 30s
+#      timeout: 10s
+#      retries: 5
+#      start_period: 20s
 
   redis:
     image: redis:latest
     container_name: redis
     ports:
       - "${REDIS_PORT}:${REDIS_PORT}"
+    environment:
+      REDIS_PASSWORD: "${REDIS_PASSWORD}"
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: ["CMD", "redis-cli", "-a", "$REDIS_PASSWORD", "ping"]
       interval: 5s
       timeout: 10s
       retries: 5
       start_period: 10s
-    networks:
-      - internal
 
-networks:
-  internal:
+  integration:
+    build:
+      context: .
+      dockerfile: integration-test/Dockerfile
+    container_name: integration
+    image: integration
+    depends_on:
+      - app
+
+volumes:
+  pg-data:

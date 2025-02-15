@@ -16,13 +16,12 @@ type CoinHistoryDTO struct {
 	Sent     []SentDTO     `json:"sent"`
 }
 
-// TODO Поменять int на string обратно как протестирую прототип
 type ReceivedDTO struct {
-	FromUser int `json:"fromUser"`
-	Amount   int `json:"amount"`
+	FromUser string `json:"fromUser"`
+	Amount   int    `json:"amount"`
 }
 
 type SentDTO struct {
-	ToUser int `json:"toUser"`
-	Amount int `json:"amount"`
+	ToUser string `json:"toUser"`
+	Amount int    `json:"amount"`
 }

@@ -2,14 +2,13 @@ package http
 
 import (
 	auth "avitoshop/internal/app/usecases/auth"
+	buymerch "avitoshop/internal/app/usecases/buy_merch"
 	sendcoin "avitoshop/internal/app/usecases/send_coins"
 	userinfo "avitoshop/internal/app/usecases/user_info"
 	"avitoshop/pkg/logger"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
-
-const StatusError = "errors"
 
 func NewRouter(
 	handler *gin.Engine,
@@ -18,6 +17,7 @@ func NewRouter(
 	auth auth.AuthUseCase,
 	userInfo userinfo.UserInfoUseCase,
 	sendCoins sendcoin.SendCoinsUseCase,
+	buyMerch buymerch.BuyMerchUseCase,
 ) {
 	// Options
 	handler.Use(gin.Logger())
@@ -35,10 +35,13 @@ func NewRouter(
 	authHandler := NewAuthHandler(auth)
 	userInfoHandler := NewUserInfoHandler(userInfo)
 	sendCoinsHandler := NewSendCoinsHandler(sendCoins)
+	buyMerchHandler := NewBuyMerchHandler(buyMerch)
 
-	handler.POST("api/auth", authHandler.Auth)
-	handler.GET("/api/info", authMiddleware, userInfoHandler.GetInfo)
-	//TODO Дописать
-	handler.POST("/api/sendCoin", authMiddleware, sendCoinsHandler.SendCoins)
-	handler.GET("/api/buy/:item", authMiddleware, nil)
+	api := handler.Group("/api")
+	{
+		api.POST("/auth", authHandler.Auth)
+		api.GET("/info", authMiddleware, userInfoHandler.GetInfo)
+		api.POST("/sendCoin", authMiddleware, sendCoinsHandler.SendCoins)
+		api.GET("/buy/:item", authMiddleware, buyMerchHandler.BuyMerch)
+	}
 }

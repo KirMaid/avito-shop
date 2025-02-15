@@ -2,13 +2,10 @@ package middleware
 
 import (
 	"avitoshop/pkg/jwt"
-	"errors"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strings"
 )
-
-var ErrInvalidToken = errors.New("invalid token")
 
 func AuthMiddleware(signingKey []byte) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -28,7 +25,7 @@ func AuthMiddleware(signingKey []byte) gin.HandlerFunc {
 
 		username, err := jwt.ValidateToken(token, signingKey)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"errors": ErrInvalidToken.Error()})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"errors": "invalid token"})
 			return
 		}
 

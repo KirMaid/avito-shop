@@ -15,3 +15,4 @@ auth:
   hash_salt: 'test_salt'
   signing_key: 'my_super_secret_key'
   token_ttl: 24h
+

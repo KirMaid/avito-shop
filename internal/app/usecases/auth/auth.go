@@ -6,22 +6,30 @@ import (
 	"avitoshop/pkg/jwt"
 	"context"
 	"errors"
+	"fmt"
 	"time"
 )
 
 var ErrInvalidPassword = errors.New("invalid password")
 
 type AuthUseCase struct {
-	userRepo repositories.UserRepository
-
+	userRepo       repositories.UserRepository
+	redisUserRepo  repositories.RedisUserRepository
 	hashSalt       string
 	signingKey     []byte
 	expireDuration time.Duration
 }
 
-func NewAuthUseCase(userRepo repositories.UserRepository, hashSalt string, signingKey []byte, expireDuration time.Duration) *AuthUseCase {
+func NewAuthUseCase(
+	userRepo repositories.UserRepository,
+	redisUserRepo repositories.RedisUserRepository,
+	hashSalt string,
+	signingKey []byte,
+	expireDuration time.Duration,
+) *AuthUseCase {
 	return &AuthUseCase{
 		userRepo:       userRepo,
+		redisUserRepo:  redisUserRepo,
 		hashSalt:       hashSalt,
 		signingKey:     signingKey,
 		expireDuration: expireDuration,
@@ -31,13 +39,28 @@ func NewAuthUseCase(userRepo repositories.UserRepository, hashSalt string, signi
 func (auc *AuthUseCase) Auth(ctx context.Context, authData *entities.Auth) (string, error) {
 	hashedPassword := jwt.HashPassword(authData.Password, auc.hashSalt)
 
-	dbUser, err := auc.userRepo.GetByUsername(ctx, authData.Username)
+	dbUser, err := auc.redisUserRepo.GetByUsername(ctx, authData.Username)
+
 	if err != nil {
-		if errors.Is(err, repositories.ErrUserDoesNotExist) {
-			return auc.Register(ctx, authData.Username, hashedPassword)
+		if !errors.Is(err, repositories.ErrCacheMiss) && !errors.Is(err, repositories.ErrEmptyCacheData) {
+			return "", fmt.Errorf("failed to get user from Redis: %w", err)
 		}
-		return "", err
+
+		dbUser, err = auc.userRepo.GetByUsername(ctx, authData.Username)
+
+		if err != nil {
+			if errors.Is(err, repositories.ErrUserDoesNotExist) {
+				return auc.Register(ctx, authData.Username, hashedPassword)
+			}
+		}
+
+		if err := auc.redisUserRepo.SetByUsername(ctx, authData.Username, dbUser); err != nil {
+			return "", fmt.Errorf("failed to set user in Redis: %w", err)
+		}
 	}
+
+	fmt.Printf("Пароль жи есть из БД %s\n\n", dbUser.Password)
+	fmt.Printf("Пароль жи есть хэшированный %s\n\n", hashedPassword)
 
 	if dbUser.Password != hashedPassword {
 		return "", ErrInvalidPassword
@@ -62,8 +85,13 @@ func (auc *AuthUseCase) Register(ctx context.Context, username string, hashedPas
 		return "", err
 	}
 
-	if err := auc.userRepo.Insert(ctx, user); err != nil {
+	user, err = auc.userRepo.Insert(ctx, user)
+	if err != nil {
 		return "", err
+	}
+
+	if err := auc.redisUserRepo.SetByUsername(ctx, username, user); err != nil {
+		return "", fmt.Errorf("failed to set user in Redis: %w", err)
 	}
 	return token, nil
 }

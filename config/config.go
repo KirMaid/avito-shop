@@ -29,7 +29,10 @@ type Postgres struct {
 }
 
 type Redis struct {
-	Port int `mapstructure:"port"`
+	Host     string `mapstructure:"host"`
+	Port     int    `mapstructure:"port"`
+	DB       int    `mapstructure:"db"`
+	Password string `mapstructure:"password"`
 }
 
 type Auth struct {
@@ -57,7 +60,10 @@ func NewConfig() (*Config, error) {
 
 	viper.BindEnv("http.port", "SERVER_PORT")
 	viper.BindEnv("postgres.url", "DATABASE_URL")
+	viper.BindEnv("redis.host", "REDIS_HOST")
 	viper.BindEnv("redis.port", "REDIS_PORT")
+	viper.BindEnv("redis.password", "REDIS_PASSWORD")
+	viper.BindEnv("redis.db", "REDIS_DB")
 
 	if err := viper.Unmarshal(cfg); err != nil {
 		log.Fatalf("Unable to decode config into struct: %v", err)

@@ -24,13 +24,12 @@ type MerchRepository interface {
 }
 
 type RedisMerchRepository interface {
-	GetList(ctx context.Context) ([]entities.Merch, error)
-	SetList(ctx context.Context, merch []entities.Merch) error
-	DeleteList(ctx context.Context) error
+	GetByName(ctx context.Context, name string) (*entities.Merch, error)
+	SetByName(ctx context.Context, name string, merch *entities.Merch) error
 }
 
 type TransactionRepository interface {
-	Insert(ctx context.Context, transaction *entities.Transaction) (int, error)
+	Insert(ctx context.Context, transaction *entities.Transaction) (*entities.Transaction, error)
 	GetReceivedTransactions(ctx context.Context, userID int) ([]entities.Transaction, error)
 	GetSentTransactions(ctx context.Context, userID int) ([]entities.Transaction, error)
 }
@@ -46,10 +45,10 @@ type RedisTransactionRepository interface {
 }
 
 type UserRepository interface {
-	Insert(ctx context.Context, user *entities.User) error
+	Insert(ctx context.Context, user *entities.User) (*entities.User, error)
 	GetByUsername(ctx context.Context, username string) (*entities.User, error)
 	GetByID(ctx context.Context, userID int) (*entities.User, error)
-	//TODO Определится всё таки что прокидывать
+	GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, error)
 	UpdateBalance(ctx context.Context, userID int, balance int) error
 }
 
@@ -57,8 +56,5 @@ type RedisUserRepository interface {
 	GetByUsername(ctx context.Context, username string) (*entities.User, error)
 	SetByUsername(ctx context.Context, username string, user *entities.User) error
 	DeleteByUsername(ctx context.Context, username string) error
-
-	GetByID(ctx context.Context, userID int) (*entities.User, error)
-	SetByID(ctx context.Context, userID int, user *entities.User) error
-	DeleteByID(ctx context.Context, userID int) error
+	GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, error)
 }

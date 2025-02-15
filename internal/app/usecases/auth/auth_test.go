@@ -8,10 +8,11 @@ import (
 	"avitoshop/pkg/jwt"
 	"context"
 	"errors"
-	"github.com/stretchr/testify/assert"
-	"go.uber.org/mock/gomock"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestAuthUseCase_Auth_Success(t *testing.T) {
@@ -19,11 +20,12 @@ func TestAuthUseCase_Auth_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	userRepo := mocks.NewMockUserRepository(ctrl)
-
+	redisUserRepo := mocks.NewMockRedisUserRepository(ctrl)
 	hashSalt := "salt"
 	signingKey := []byte("secret")
 	expireDuration := time.Hour
-	auc := usecases.NewAuthUseCase(userRepo, hashSalt, signingKey, expireDuration)
+
+	auc := usecases.NewAuthUseCase(userRepo, redisUserRepo, hashSalt, signingKey, expireDuration)
 
 	username := "testuser"
 	password := "testpassword"
@@ -34,9 +36,17 @@ func TestAuthUseCase_Auth_Success(t *testing.T) {
 		Password: hashedPassword,
 	}
 
+	redisUserRepo.EXPECT().
+		GetByUsername(gomock.Any(), username).
+		Return(nil, repositories.ErrCacheMiss)
+
 	userRepo.EXPECT().
 		GetByUsername(gomock.Any(), username).
 		Return(dbUser, nil)
+
+	redisUserRepo.EXPECT().
+		SetByUsername(gomock.Any(), username, dbUser).
+		Return(nil)
 
 	token, err := auc.Auth(context.Background(), &entities.Auth{
 		Username: username,
@@ -56,11 +66,12 @@ func TestAuthUseCase_Auth_InvalidPassword(t *testing.T) {
 	defer ctrl.Finish()
 
 	userRepo := mocks.NewMockUserRepository(ctrl)
-
+	redisUserRepo := mocks.NewMockRedisUserRepository(ctrl)
 	hashSalt := "salt"
 	signingKey := []byte("secret")
 	expireDuration := time.Hour
-	auc := usecases.NewAuthUseCase(userRepo, hashSalt, signingKey, expireDuration)
+
+	auc := usecases.NewAuthUseCase(userRepo, redisUserRepo, hashSalt, signingKey, expireDuration)
 
 	username := "testuser"
 	password := "testpassword"
@@ -72,7 +83,7 @@ func TestAuthUseCase_Auth_InvalidPassword(t *testing.T) {
 		Password: hashedPassword,
 	}
 
-	userRepo.EXPECT().
+	redisUserRepo.EXPECT().
 		GetByUsername(gomock.Any(), username).
 		Return(dbUser, nil)
 
@@ -91,15 +102,20 @@ func TestAuthUseCase_Auth_UserNotFound_Register(t *testing.T) {
 	defer ctrl.Finish()
 
 	userRepo := mocks.NewMockUserRepository(ctrl)
-
+	redisUserRepo := mocks.NewMockRedisUserRepository(ctrl)
 	hashSalt := "salt"
 	signingKey := []byte("secret")
 	expireDuration := time.Hour
-	auc := usecases.NewAuthUseCase(userRepo, hashSalt, signingKey, expireDuration)
+
+	auc := usecases.NewAuthUseCase(userRepo, redisUserRepo, hashSalt, signingKey, expireDuration)
 
 	username := "newuser"
 	password := "newpassword"
-	//hashedPassword := jwt.HashPassword(password, hashSalt)
+	hashedPassword := jwt.HashPassword(password, hashSalt)
+
+	redisUserRepo.EXPECT().
+		GetByUsername(gomock.Any(), username).
+		Return(nil, repositories.ErrCacheMiss)
 
 	userRepo.EXPECT().
 		GetByUsername(gomock.Any(), username).
@@ -107,6 +123,13 @@ func TestAuthUseCase_Auth_UserNotFound_Register(t *testing.T) {
 
 	userRepo.EXPECT().
 		Insert(gomock.Any(), gomock.Any()).
+		Return(&entities.User{
+			Username: username,
+			Password: hashedPassword,
+		}, nil)
+
+	redisUserRepo.EXPECT().
+		SetByUsername(gomock.Any(), username, gomock.Any()).
 		Return(nil)
 
 	token, err := auc.Auth(context.Background(), &entities.Auth{
@@ -127,11 +150,12 @@ func TestAuthUseCase_Register_Success(t *testing.T) {
 	defer ctrl.Finish()
 
 	userRepo := mocks.NewMockUserRepository(ctrl)
-
+	redisUserRepo := mocks.NewMockRedisUserRepository(ctrl)
 	hashSalt := "salt"
 	signingKey := []byte("secret")
 	expireDuration := time.Hour
-	auc := usecases.NewAuthUseCase(userRepo, hashSalt, signingKey, expireDuration)
+
+	auc := usecases.NewAuthUseCase(userRepo, redisUserRepo, hashSalt, signingKey, expireDuration)
 
 	username := "newuser"
 	password := "newpassword"
@@ -139,6 +163,13 @@ func TestAuthUseCase_Register_Success(t *testing.T) {
 
 	userRepo.EXPECT().
 		Insert(gomock.Any(), gomock.Any()).
+		Return(&entities.User{
+			Username: username,
+			Password: hashedPassword,
+		}, nil)
+
+	redisUserRepo.EXPECT().
+		SetByUsername(gomock.Any(), username, gomock.Any()).
 		Return(nil)
 
 	token, err := auc.Register(context.Background(), username, hashedPassword)
@@ -156,20 +187,22 @@ func TestAuthUseCase_Register_Error(t *testing.T) {
 	defer ctrl.Finish()
 
 	userRepo := mocks.NewMockUserRepository(ctrl)
-
+	redisUserRepo := mocks.NewMockRedisUserRepository(ctrl)
 	hashSalt := "salt"
 	signingKey := []byte("secret")
 	expireDuration := time.Hour
-	auc := usecases.NewAuthUseCase(userRepo, hashSalt, signingKey, expireDuration)
+
+	auc := usecases.NewAuthUseCase(userRepo, redisUserRepo, hashSalt, signingKey, expireDuration)
 
 	username := "newuser"
 	password := "newpassword"
 	hashedPassword := jwt.HashPassword(password, hashSalt)
 
 	expectedErr := errors.New("database error")
+
 	userRepo.EXPECT().
 		Insert(gomock.Any(), gomock.Any()).
-		Return(expectedErr)
+		Return(nil, expectedErr)
 
 	token, err := auc.Register(context.Background(), username, hashedPassword)
 

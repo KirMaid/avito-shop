@@ -1,7 +1,6 @@
-CREATE TABLE inventories
-(
-    id       SERIAL PRIMARY KEY,
-    user_id  INT REFERENCES users (id) ON DELETE CASCADE,
-    type     VARCHAR(255) NOT NULL,
-    quantity INT          NOT NULL
+CREATE TABLE inventories (
+     user_id INT NOT NULL,
+     type VARCHAR(255) NOT NULL,
+     quantity INT NOT NULL,
+     PRIMARY KEY (user_id, type)
 );

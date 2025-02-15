@@ -26,7 +26,6 @@ func (i *inventoryRepository) GetByUser(ctx context.Context, userID int) ([]enti
 	for rows.Next() {
 		var inventoryItem entities.Inventory
 		if err := rows.Scan(
-			&inventoryItem.ID,
 			&inventoryItem.UserID,
 			&inventoryItem.Type,
 			&inventoryItem.Quantity,

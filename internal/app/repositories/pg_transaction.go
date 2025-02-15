@@ -15,17 +15,25 @@ func NewTransactionRepository(db *pgxpool.Pool) TransactionRepository {
 	return &transactionRepository{db: db}
 }
 
-func (r *transactionRepository) Insert(ctx context.Context, transaction *entities.Transaction) (int, error) {
-	query := "INSERT INTO transactions (amount, sender_id, receiver_id) VALUES ($1, $2, $3) RETURNING id"
+func (r *transactionRepository) Insert(ctx context.Context, transaction *entities.Transaction) (*entities.Transaction, error) {
+	query := `
+       INSERT INTO transactions (amount, sender_id, receiver_id) 
+       VALUES ($1, $2, $3) 
+       RETURNING id, sender_id, receiver_id, amount
+    `
 
-	var id int
-	err := r.db.QueryRow(ctx, query, transaction.Amount, transaction.SenderID, transaction.ReceiverID).Scan(&id)
+	var insertedTransaction entities.Transaction
+	err := r.db.QueryRow(ctx, query, transaction.Amount, transaction.SenderID, transaction.ReceiverID).Scan(
+		&insertedTransaction.ID,
+		&insertedTransaction.SenderID,
+		&insertedTransaction.ReceiverID,
+		&insertedTransaction.Amount,
+	)
 	if err != nil {
-		// log.Errorf("error on inserting transaction: %s", err.Error())
-		return 0, err
+		return nil, err
 	}
 
-	return id, nil
+	return &insertedTransaction, nil
 }
 
 func (r *transactionRepository) GetReceivedTransactions(ctx context.Context, userID int) ([]entities.Transaction, error) {
