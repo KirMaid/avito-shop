@@ -7,7 +7,6 @@ import (
 	userinfo "avitoshop/internal/app/usecases/user_info"
 	"avitoshop/pkg/logger"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func NewRouter(
@@ -19,14 +18,9 @@ func NewRouter(
 	sendCoins sendcoin.SendCoinsUseCase,
 	buyGood buygood.BuyGoodUseCase,
 ) {
-	// Options
 	handler.Use(gin.Logger())
 	handler.Use(gin.Recovery())
 
-	// K8s probe
-	handler.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
-
-	// Routers
 	authHandler := NewAuthHandler(auth)
 	userInfoHandler := NewUserInfoHandler(userInfo)
 	sendCoinsHandler := NewSendCoinsHandler(sendCoins)

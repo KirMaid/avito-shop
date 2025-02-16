@@ -29,7 +29,7 @@ func (ah *AuthHandler) Auth(c *gin.Context) {
 	}
 
 	if a.Username == "" || a.Password == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "username and password are required"})
+		c.JSON(http.StatusBadRequest, gin.H{StatusError: "username and password are required"})
 		return
 	}
 
@@ -41,7 +41,7 @@ func (ah *AuthHandler) Auth(c *gin.Context) {
 		}
 
 		if errors.Is(err, auth.ErrInvalidPassword) {
-			c.JSON(http.StatusUnauthorized, gin.H{StatusError: err.Error()})
+			c.JSON(http.StatusUnauthorized, gin.H{StatusError: auth.ErrInvalidPassword})
 			return
 		}
 
