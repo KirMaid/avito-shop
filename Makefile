@@ -16,9 +16,6 @@ compose-up: ### Run docker-compose
 	docker-compose up --build -d postgres redis app && docker-compose logs -f
 .PHONY: compose-up
 
-#compose-up-integration-test: ### Run docker-compose with integration test
-#	docker-compose up --build -d test-postgres test-redis integration && docker-compose logs -f
-
 compose-down: ### Down docker-compose
 	docker-compose down --remove-orphans
 .PHONY: compose-down
@@ -31,21 +28,9 @@ linter-golangci: ### check by golangci linter
 	golangci-lint run
 .PHONY: linter-golangci
 
-linter-hadolint: ### check by hadolint linter
-	git ls-files --exclude='Dockerfile*' --ignored | xargs hadolint
-.PHONY: linter-hadolint
-
-linter-dotenv: ### check by dotenv linter
-	dotenv-linter
-.PHONY: linter-dotenv
-
 test: ### run test
 	go test -v -cover -race ./internal/...
 .PHONY: test
-
-#integration-test: ### run integration-test
-#	go clean -testcache && go test -v ./integration-test/...
-#.PHONY: integration-test
 
 mock: ### run mockgen
 	mockgen -source=interfaces.go -destination=./mocks/mocks.go -package=mocks
