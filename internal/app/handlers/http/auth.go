@@ -22,10 +22,14 @@ func NewAuthHandler(authUseCase auth.AuthUseCase) *AuthHandler {
 }
 
 func (ah *AuthHandler) Auth(c *gin.Context) {
-	//TODO Жёстко валидировать username и password с 400
 	var a entities.Auth
 	if err := c.ShouldBindJSON(&a); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{StatusError: ErrInvalidRequestBody})
+		return
+	}
+
+	if a.Username == "" || a.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "username and password are required"})
 		return
 	}
 

@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// TODO Разобраться с паттерном "Функциональные опции"
 type Option func(*Server)
 
 func Port(port string) Option {

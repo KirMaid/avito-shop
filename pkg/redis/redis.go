@@ -35,16 +35,13 @@ func New(addr string, password string, DB int, opts ...Option) (*Redis, error) {
 
 	client := redis.NewClient(&redis.Options{
 		Addr:         addr,
-		Password:     "",
+		Password:     password,
 		DB:           DB,
 		PoolSize:     r.poolSize,
 		DialTimeout:  r.connTimeout,
 		ReadTimeout:  r.connTimeout,
 		WriteTimeout: r.connTimeout,
 	})
-
-	log.Printf("Address %s\n", addr)
-	log.Printf("Password %s\n", password)
 
 	var err error
 	for i := 0; i < r.maxRetries; i++ {

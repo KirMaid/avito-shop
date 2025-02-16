@@ -34,7 +34,6 @@ func Run(cfg *config.Config) {
 	transactionRepo := repositories.NewTransactionRepository(pg.Pool)
 	goodRepo := repositories.NewGoodRepository(pg.Pool)
 
-	//l.Fatal(fmt.Errorf("PasswordRedis: %s", cfg.Redis.Password))
 	redisAddr := fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)
 	redisClient, err := redis.New(
 		redisAddr,
@@ -45,7 +44,7 @@ func Run(cfg *config.Config) {
 	redisUserRepo := repositories.NewRedisUserRepository(redisClient.Client, 0)
 	redisInventoryRepo := repositories.NewRedisInventoryRepository(redisClient.Client, 0)
 	redisGoodRepo := repositories.NewRedisGoodRepository(redisClient.Client, 0)
-	//redisTransactionRepo := repositories.NewRedisTransactionRepository(redisClient.Client, 5000000)
+	redisTransactionRepo := repositories.NewRedisTransactionRepository(redisClient.Client, 0)
 
 	if err != nil {
 		l.Fatal(fmt.Errorf("app - Run - redis.New: %w", err))
@@ -67,13 +66,14 @@ func Run(cfg *config.Config) {
 		redisUserRepo,
 		redisInventoryRepo,
 		redisGoodRepo,
-		//redisTransactionRepo,
+		redisTransactionRepo,
 	)
 	sendCoinsUseCase := sendcoins.NewSendCoinsUseCase(
 		pg.Pool,
 		userRepo,
 		transactionRepo,
 		redisUserRepo,
+		redisTransactionRepo,
 	)
 	buyGoodUseCase := buygood.NewBuyGoodUseCase(
 		pg.Pool,
@@ -84,16 +84,6 @@ func Run(cfg *config.Config) {
 		redisGoodRepo,
 		redisInventoryRepo,
 	)
-
-	// RabbitMQ RPC Server
-	//rmqRouter := amqprpc.NewRouter(translationUseCase)
-	//
-	//rmqServer, err := server.New(cfg.RMQ.URL, cfg.RMQ.ServerExchange, rmqRouter, l)
-	//if err != nil {
-	//	l.Fatal(fmt.Errorf("app - Run - rmqServer - server.New: %w", err))
-	//}
-
-	//TODО Вынести в переменные среды
 
 	authMiddleware := middleware.AuthMiddleware([]byte(cfg.Auth.SigningKey))
 

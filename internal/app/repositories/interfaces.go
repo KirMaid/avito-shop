@@ -21,7 +21,6 @@ type RedisInventoryRepository interface {
 
 type GoodRepository interface {
 	GetByID(ctx context.Context, id int) (*entities.Good, error)
-	GetByIDs(ctx context.Context, goodsIDs []int) ([]entities.Good, error)
 	GetByName(ctx context.Context, name string) (*entities.Good, error)
 }
 
@@ -30,7 +29,6 @@ type RedisGoodRepository interface {
 	GetByName(ctx context.Context, name string) (*entities.Good, error)
 	SetByID(ctx context.Context, id int, good *entities.Good) error
 	SetByName(ctx context.Context, name string, good *entities.Good) error
-	GetByIDs(ctx context.Context, goodsIDs []int) ([]entities.Good, error)
 }
 
 type TransactionRepository interface {
@@ -42,11 +40,10 @@ type TransactionRepository interface {
 type RedisTransactionRepository interface {
 	GetReceivedTransactions(ctx context.Context, userID int) ([]entities.Transaction, error)
 	SetReceivedTransactions(ctx context.Context, userID int, transactions []entities.Transaction) error
-	DeleteReceivedTransactions(ctx context.Context, userID int) error
-
 	GetSentTransactions(ctx context.Context, userID int) ([]entities.Transaction, error)
 	SetSentTransactions(ctx context.Context, userID int, transactions []entities.Transaction) error
-	DeleteSentTransactions(ctx context.Context, userID int) error
+	AddReceivedTransaction(ctx context.Context, userID int, transaction *entities.Transaction) error
+	AddSentTransaction(ctx context.Context, userID int, transaction *entities.Transaction) error
 }
 
 type UserRepository interface {
@@ -54,6 +51,7 @@ type UserRepository interface {
 	GetByUsername(ctx context.Context, username string) (*entities.User, error)
 	GetByID(ctx context.Context, userID int) (*entities.User, error)
 	GetByIDs(ctx context.Context, userIDs []int) ([]entities.User, error)
+	GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, error)
 	UpdateBalance(ctx context.Context, userID int, balance int) error
 }
 
@@ -62,6 +60,5 @@ type RedisUserRepository interface {
 	GetById(ctx context.Context, id int) (*entities.User, error)
 	SetByUsername(ctx context.Context, username string, user *entities.User) error
 	SetById(ctx context.Context, id int, user *entities.User) error
-	GetByIDs(ctx context.Context, userIDs []int) ([]entities.User, error)
 	GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, []int, error)
 }

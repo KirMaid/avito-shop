@@ -40,6 +40,11 @@ func (sch *SendCoinsHandler) SendCoins(c *gin.Context) {
 		return
 	}
 
+	if request.ToUser == "" || request.Amount == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "toUser and amount are required"})
+		return
+	}
+
 	amount, err := strconv.Atoi(request.Amount)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{StatusError: "amount must be a valid integer"})
@@ -48,7 +53,7 @@ func (sch *SendCoinsHandler) SendCoins(c *gin.Context) {
 
 	err = sch.sendCoinsUseCase.SendCoins(c.Request.Context(), senderUsername, request.ToUser, amount)
 	if err != nil {
-		if errors.Is(err, usecases.ErrInsufficientFunds) {
+		if errors.Is(err, usecases.ErrInsufficientFunds) || errors.Is(err, sendcoins.ErrAmountMustBePositive) || errors.Is(err, sendcoins.ErrSamePersons) {
 			c.JSON(http.StatusBadRequest, gin.H{StatusError: err.Error()})
 			return
 		}

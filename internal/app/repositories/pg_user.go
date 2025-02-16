@@ -99,3 +99,30 @@ func (r *userRepository) GetByIDs(ctx context.Context, userIDs []int) ([]entitie
 
 	return users, nil
 }
+
+func (r *userRepository) GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, error) {
+	rows, err := r.db.Query(ctx, "SELECT id, username FROM users WHERE id = ANY($1)", userIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query usernames: %w", err)
+	}
+	defer rows.Close()
+
+	usernames := make(map[int]string)
+
+	for rows.Next() {
+		var userID int
+		var username string
+
+		if err := rows.Scan(&userID, &username); err != nil {
+			return nil, fmt.Errorf("failed to scan username: %w", err)
+		}
+
+		usernames[userID] = username
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error after iterating rows: %w", err)
+	}
+
+	return usernames, nil
+}

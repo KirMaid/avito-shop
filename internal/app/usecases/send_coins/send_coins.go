@@ -10,12 +10,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+var ErrSamePersons = errors.New("sender and receiver username cannot be the same")
+var ErrAmountMustBePositive = errors.New("amount must be positive")
+
 type SendCoinsUseCase struct {
-	dbPool          *pgxpool.Pool
-	userRepo        repositories.UserRepository
-	transactionRepo repositories.TransactionRepository
-	redisUserRepo   repositories.RedisUserRepository
-	//redisTransactionRepo repositories.RedisTransactionRepository
+	dbPool               *pgxpool.Pool
+	userRepo             repositories.UserRepository
+	transactionRepo      repositories.TransactionRepository
+	redisUserRepo        repositories.RedisUserRepository
+	redisTransactionRepo repositories.RedisTransactionRepository
 }
 
 func NewSendCoinsUseCase(
@@ -23,14 +26,14 @@ func NewSendCoinsUseCase(
 	userRepo repositories.UserRepository,
 	transactionRepo repositories.TransactionRepository,
 	redisUserRepo repositories.RedisUserRepository,
-	// redisTransactionRepo repositories.RedisTransactionRepository,
+	redisTransactionRepo repositories.RedisTransactionRepository,
 ) *SendCoinsUseCase {
 	return &SendCoinsUseCase{
-		dbPool:          dbPool,
-		userRepo:        userRepo,
-		transactionRepo: transactionRepo,
-		redisUserRepo:   redisUserRepo,
-		//redisTransactionRepo: redisTransactionRepo,
+		dbPool:               dbPool,
+		userRepo:             userRepo,
+		transactionRepo:      transactionRepo,
+		redisUserRepo:        redisUserRepo,
+		redisTransactionRepo: redisTransactionRepo,
 	}
 }
 
@@ -41,7 +44,11 @@ func (uc *SendCoinsUseCase) SendCoins(
 	amount int,
 ) error {
 	if amount <= 0 {
-		return errors.New("amount must be positive")
+		return ErrAmountMustBePositive
+	}
+
+	if senderUsername == receiverUsername {
+		return ErrSamePersons
 	}
 
 	sender, err := uc.getUser(ctx, senderUsername)
@@ -88,7 +95,7 @@ func (uc *SendCoinsUseCase) SendCoins(
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	defer uc.updateCache(ctx, sender, receiver)
+	defer uc.updateCache(ctx, sender, receiver, transaction)
 
 	return nil
 }
@@ -107,11 +114,11 @@ func (uc *SendCoinsUseCase) getUser(ctx context.Context, username string) (*enti
 	return user, nil
 }
 
-func (uc *SendCoinsUseCase) updateCache(ctx context.Context, sender, receiver *entities.User) {
-	//go func() {
+func (uc *SendCoinsUseCase) updateCache(ctx context.Context, sender, receiver *entities.User, transaction *entities.Transaction) {
 	_ = uc.redisUserRepo.SetByUsername(ctx, sender.Username, sender)
 	_ = uc.redisUserRepo.SetById(ctx, sender.ID, sender)
 	_ = uc.redisUserRepo.SetByUsername(ctx, receiver.Username, receiver)
 	_ = uc.redisUserRepo.SetById(ctx, receiver.ID, receiver)
-	//}()
+	_ = uc.redisTransactionRepo.AddSentTransaction(ctx, sender.ID, transaction)
+	_ = uc.redisTransactionRepo.AddReceivedTransaction(ctx, receiver.ID, transaction)
 }

@@ -58,7 +58,6 @@ func (r *redisInventoryRepository) SetByUser(ctx context.Context, userID int, in
 		return fmt.Errorf("failed to set inventory in Redis: %w", err)
 	}
 
-	// TODO Сделать так везде Устанавливаем TTL для ключа
 	if r.ttl > 0 {
 		err = r.client.Expire(ctx, key, r.ttl).Err()
 		if err != nil {
@@ -77,7 +76,6 @@ func (r *redisInventoryRepository) InsertOrUpdate(ctx context.Context, inventory
 		return fmt.Errorf("failed to set inventory item in Redis: %w", err)
 	}
 
-	// TODO Сделать так везде Устанавливаем TTL для ключа
 	if r.ttl > 0 {
 		err = r.client.Expire(ctx, key, r.ttl).Err()
 		if err != nil {

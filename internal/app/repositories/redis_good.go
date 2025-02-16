@@ -13,11 +13,6 @@ type redisGoodRepository struct {
 	ttl    time.Duration
 }
 
-func (r *redisGoodRepository) GetByIDs(ctx context.Context, goodsIDs []int) ([]entities.Good, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func NewRedisGoodRepository(client *redis.Client, ttl time.Duration) RedisGoodRepository {
 	return &redisGoodRepository{client: client, ttl: ttl}
 }
@@ -60,6 +55,13 @@ func (r *redisGoodRepository) SetByID(ctx context.Context, id int, good *entitie
 		return fmt.Errorf("failed to set good in Redis: %w", err)
 	}
 
+	if r.ttl > 0 {
+		err = r.client.Expire(ctx, key, r.ttl).Err()
+		if err != nil {
+			return fmt.Errorf("failed to set TTL for good key: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -99,6 +101,13 @@ func (r *redisGoodRepository) SetByName(ctx context.Context, name string, good *
 
 	if err != nil {
 		return fmt.Errorf("failed to set good in Redis: %w", err)
+	}
+
+	if r.ttl > 0 {
+		err = r.client.Expire(ctx, key, r.ttl).Err()
+		if err != nil {
+			return fmt.Errorf("failed to set TTL for good key: %w", err)
+		}
 	}
 
 	return nil

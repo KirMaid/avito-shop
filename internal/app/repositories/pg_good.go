@@ -20,11 +20,6 @@ func (g goodRepository) GetByID(ctx context.Context, id int) (*entities.Good, er
 	return &good, nil
 }
 
-func (g goodRepository) GetByIDs(ctx context.Context, goodsIDs []int) ([]entities.Good, error) {
-	//TODO implement me
-	panic("implement me")
-}
-
 func NewGoodRepository(db *pgxpool.Pool) GoodRepository {
 	return &goodRepository{db: db}
 }

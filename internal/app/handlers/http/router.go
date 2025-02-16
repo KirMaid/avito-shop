@@ -26,11 +26,6 @@ func NewRouter(
 	// K8s probe
 	handler.GET("/health", func(c *gin.Context) { c.Status(http.StatusOK) })
 
-	//TODO Внедрить Prometheus
-
-	// Prometheus metrics
-	//handler.GET("/metrics", gin.WrapH(promhttp.Handler()))
-
 	// Routers
 	authHandler := NewAuthHandler(auth)
 	userInfoHandler := NewUserInfoHandler(userInfo)

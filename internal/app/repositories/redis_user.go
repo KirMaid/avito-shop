@@ -67,35 +67,6 @@ func (r *redisUserRepository) GetById(ctx context.Context, id int) (*entities.Us
 	return &user, nil
 }
 
-func (r *redisUserRepository) GetByIDs(ctx context.Context, userIDs []int) ([]entities.User, error) {
-	//keys := make([]string, 0, len(userIDs))
-	//for _, id := range userIDs {
-	//	keys = append(keys, fmt.Sprintf("user:id:%d", id))
-	//}
-	//
-	//results, err := r.client.MGet(ctx, keys...).Result()
-	//if err != nil {
-	//	return nil, fmt.Errorf("failed to get usernames from Redis: %w", err)
-	//}
-	//
-	//usernames := make(map[int]string)
-	//for i, result := range results {
-	//	if result == nil {
-	//		continue
-	//	}
-	//
-	//	var user entities.User
-	//	if err := json.Unmarshal([]byte(result.(string)), &user); err != nil {
-	//		return nil, fmt.Errorf("failed to unmarshal user: %w", err)
-	//	}
-	//
-	//	usernames[userIDs[i]] = user.Username
-	//}
-	//
-	//return usernames, nil
-	return nil, nil
-}
-
 func (r *redisUserRepository) GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, []int, error) {
 	usernames := make(map[int]string)
 	missingIDs := make([]int, 0)
@@ -140,6 +111,13 @@ func (r *redisUserRepository) SetByUsername(ctx context.Context, username string
 		return fmt.Errorf("failed to set user in Redis: %w", err)
 	}
 
+	if r.ttl > 0 {
+		err = r.client.Expire(ctx, key, r.ttl).Err()
+		if err != nil {
+			return fmt.Errorf("failed to set TTL for user key: %w", err)
+		}
+	}
+
 	return nil
 }
 
@@ -155,6 +133,13 @@ func (r *redisUserRepository) SetById(ctx context.Context, id int, user *entitie
 
 	if err != nil {
 		return fmt.Errorf("failed to set user in Redis: %w", err)
+	}
+
+	if r.ttl > 0 {
+		err = r.client.Expire(ctx, key, r.ttl).Err()
+		if err != nil {
+			return fmt.Errorf("failed to set TTL for user key: %w", err)
+		}
 	}
 
 	return nil

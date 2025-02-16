@@ -24,17 +24,8 @@ compose-down: ### Down docker-compose
 	docker-compose down --remove-orphans
 .PHONY: compose-down
 
-swag-v1: ### swag init
-	swag init -g internal/controller/http/v1/router.go
-.PHONY: swag-v1
-
-run: swag-v1 ### swag run
-	go mod tidy && go mod download && \
-	DISABLE_SWAGGER_HTTP_HANDLER='' GIN_MODE=debug CGO_ENABLED=0 go run -tags migrate ./cmd/app
-.PHONY: run
-
 docker-rm-volume: ### remove docker volume
-	docker volume rm go-clean-template_pg-data
+	docker volume rm avito-shop_pg-data
 .PHONY: docker-rm-volume
 
 linter-golangci: ### check by golangci linter
@@ -58,7 +49,7 @@ integration-test: ### run integration-test
 .PHONY: integration-test
 
 mock: ### run mockgen
-	mockgen -source ./internal/usecase/interfaces.go -package usecase_test > ./internal/usecase/mocks_test.go
+	mockgen -source=interfaces.go -destination=./mocks/mocks.go -package=mocks
 .PHONY: mock
 
 migrate-create:  ### create new migration

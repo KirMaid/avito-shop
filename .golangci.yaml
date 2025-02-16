@@ -1,26 +1,39 @@
 linters-settings:
   gci:
-    local-prefixes: https://github.com/KirMaid/avito-shop
+    sections:
+      - prefix(github.com/KirMaid/avito-shop)
+
+  shadow:
+    enabled: true # Включение shadow вместо govet.check-shadowing
+
   dupl:
     threshold: 100
+
   errorlint:
     errorf: true
+
   errcheck:
     check-type-assertions: true
     check-blank: true
+
   exhaustive:
     check-generated: false
     default-signifies-exhaustive: false
+
   funlen:
     lines: 65
     statements: 40
+
   gocognit:
     min-complexity: 15
+
   gocyclo:
     min-complexity: 10
+
   goconst:
     min-len: 2
     min-occurrences: 2
+
   gocritic:
     enabled-tags:
       - diagnostic
@@ -31,23 +44,27 @@ linters-settings:
     disabled-checks:
       - dupImport
       - unnecessaryBlock
+
   gofumpt:
     extra-rules: true
-  gomnd:
-    settings:
-      mnd:
-        checks:
-          - argument
-          - case
-          - condition
-          - operation
-          - return
+
+  mnd:
+    checks:
+      - argument
+      - case
+      - condition
+      - operation
+      - return
+
   govet:
-    check-shadowing: true
+    check-shadowing: false # Отключено, так как используется shadow
+
   misspell:
     locale: US
+
   nestif:
     min-complexity: 4
+
   nolintlint:
     require-explanation: true
     require-specific: true
@@ -58,7 +75,7 @@ linters:
     - asciicheck
     - bodyclose
     - cyclop
-    - deadcode
+    - unused
     - depguard
     - dogsled
     - dupl
@@ -66,7 +83,7 @@ linters:
     - errcheck
     - errorlint
     - exhaustive
-    - exportloopref
+    - copyloopvar
     - forbidigo
     - funlen
     - gci
@@ -78,11 +95,11 @@ linters:
     - gocyclo
     - godot
     - godox
-    - goerr113
+    - err113
     - gofmt
     - gofumpt
     - goimports
-    - gomnd
+    - mnd
     - gomodguard
     - goprintffuncname
     - gosec
@@ -102,27 +119,19 @@ linters:
     - rowserrcheck
     - sqlclosecheck
     - staticcheck
-    - structcheck
     - stylecheck
     - tparallel
     - thelper
     - typecheck
     - unconvert
     - unparam
-    - unused
-    - varcheck
     - wsl
     - whitespace
 
-# disable:
-#    - exhaustivestruct
-#    - ifshort
-#    - goheader
-#    - prealloc
-#    - testpackage
-#    - wrapcheck
-
 issues:
+  exclude-dirs:
+    - api
+    - docs
   exclude-rules:
     - path: integration-test
       linters:
@@ -131,8 +140,3 @@ issues:
     - path: internal/app/handlers/http
       linters:
         - godot
-
-run:
-  skip-dirs:
-    - api
-    - docs

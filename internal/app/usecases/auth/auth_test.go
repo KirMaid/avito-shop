@@ -21,6 +21,7 @@ func TestAuthUseCase_Auth_Success(t *testing.T) {
 
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	redisUserRepo := mocks.NewMockRedisUserRepository(ctrl)
+
 	hashSalt := "salt"
 	signingKey := []byte("secret")
 	expireDuration := time.Hour
@@ -48,6 +49,10 @@ func TestAuthUseCase_Auth_Success(t *testing.T) {
 		SetByUsername(gomock.Any(), username, dbUser).
 		Return(nil)
 
+	redisUserRepo.EXPECT().
+		SetById(gomock.Any(), dbUser.ID, dbUser).
+		Return(nil)
+
 	token, err := auc.Auth(context.Background(), &entities.Auth{
 		Username: username,
 		Password: password,
@@ -67,6 +72,7 @@ func TestAuthUseCase_Auth_InvalidPassword(t *testing.T) {
 
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	redisUserRepo := mocks.NewMockRedisUserRepository(ctrl)
+
 	hashSalt := "salt"
 	signingKey := []byte("secret")
 	expireDuration := time.Hour
@@ -103,6 +109,7 @@ func TestAuthUseCase_Auth_UserNotFound_Register(t *testing.T) {
 
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	redisUserRepo := mocks.NewMockRedisUserRepository(ctrl)
+
 	hashSalt := "salt"
 	signingKey := []byte("secret")
 	expireDuration := time.Hour
@@ -132,6 +139,10 @@ func TestAuthUseCase_Auth_UserNotFound_Register(t *testing.T) {
 		SetByUsername(gomock.Any(), username, gomock.Any()).
 		Return(nil)
 
+	redisUserRepo.EXPECT().
+		SetById(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil)
+
 	token, err := auc.Auth(context.Background(), &entities.Auth{
 		Username: username,
 		Password: password,
@@ -151,6 +162,7 @@ func TestAuthUseCase_Register_Success(t *testing.T) {
 
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	redisUserRepo := mocks.NewMockRedisUserRepository(ctrl)
+
 	hashSalt := "salt"
 	signingKey := []byte("secret")
 	expireDuration := time.Hour
@@ -172,6 +184,10 @@ func TestAuthUseCase_Register_Success(t *testing.T) {
 		SetByUsername(gomock.Any(), username, gomock.Any()).
 		Return(nil)
 
+	redisUserRepo.EXPECT().
+		SetById(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(nil)
+
 	token, err := auc.Register(context.Background(), username, hashedPassword)
 
 	assert.NoError(t, err)
@@ -188,6 +204,7 @@ func TestAuthUseCase_Register_Error(t *testing.T) {
 
 	userRepo := mocks.NewMockUserRepository(ctrl)
 	redisUserRepo := mocks.NewMockRedisUserRepository(ctrl)
+
 	hashSalt := "salt"
 	signingKey := []byte("secret")
 	expireDuration := time.Hour

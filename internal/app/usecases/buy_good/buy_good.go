@@ -119,18 +119,14 @@ func (uc *BuyGoodUseCase) getGood(ctx context.Context, goodName string) (*entiti
 		return nil, fmt.Errorf("failed to get good from database: %w", err)
 	}
 
-	//go func() {
 	_ = uc.redisGoodRepo.SetByName(ctx, goodName, good)
 	_ = uc.redisGoodRepo.SetByID(ctx, good.ID, good)
-	//}()
 
 	return good, nil
 }
 
 func (uc *BuyGoodUseCase) updateCache(ctx context.Context, user *entities.User, inventoryItem *entities.Inventory) {
-	//go func() {
 	_ = uc.redisInventoryRepo.DeleteByUser(ctx, user.ID)
 	_ = uc.redisUserRepo.SetByUsername(ctx, user.Username, user)
 	_ = uc.redisUserRepo.SetById(ctx, user.ID, user)
-	//}()
 }

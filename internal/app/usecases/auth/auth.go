@@ -49,10 +49,8 @@ func (auc *AuthUseCase) Auth(ctx context.Context, authData *entities.Auth) (stri
 			}
 		}
 
-		//go func() {
 		_ = auc.redisUserRepo.SetByUsername(ctx, authData.Username, dbUser)
 		_ = auc.redisUserRepo.SetById(ctx, dbUser.ID, dbUser)
-		//}()
 	}
 
 	if dbUser.Password != hashedPassword {
@@ -83,10 +81,8 @@ func (auc *AuthUseCase) Register(ctx context.Context, username string, hashedPas
 		return "", err
 	}
 
-	//go func() {
 	_ = auc.redisUserRepo.SetByUsername(ctx, username, user)
 	_ = auc.redisUserRepo.SetById(ctx, user.ID, user)
-	//}()
 
 	return token, nil
 }
