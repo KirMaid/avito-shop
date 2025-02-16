@@ -2,7 +2,7 @@ package http
 
 import (
 	auth "avitoshop/internal/app/usecases/auth"
-	buymerch "avitoshop/internal/app/usecases/buy_merch"
+	buygood "avitoshop/internal/app/usecases/buy_good"
 	sendcoin "avitoshop/internal/app/usecases/send_coins"
 	userinfo "avitoshop/internal/app/usecases/user_info"
 	"avitoshop/pkg/logger"
@@ -17,7 +17,7 @@ func NewRouter(
 	auth auth.AuthUseCase,
 	userInfo userinfo.UserInfoUseCase,
 	sendCoins sendcoin.SendCoinsUseCase,
-	buyMerch buymerch.BuyMerchUseCase,
+	buyGood buygood.BuyGoodUseCase,
 ) {
 	// Options
 	handler.Use(gin.Logger())
@@ -35,13 +35,13 @@ func NewRouter(
 	authHandler := NewAuthHandler(auth)
 	userInfoHandler := NewUserInfoHandler(userInfo)
 	sendCoinsHandler := NewSendCoinsHandler(sendCoins)
-	buyMerchHandler := NewBuyMerchHandler(buyMerch)
+	buyGoodHandler := NewBuyGoodHandler(buyGood)
 
 	api := handler.Group("/api")
 	{
 		api.POST("/auth", authHandler.Auth)
 		api.GET("/info", authMiddleware, userInfoHandler.GetInfo)
 		api.POST("/sendCoin", authMiddleware, sendCoinsHandler.SendCoins)
-		api.GET("/buy/:item", authMiddleware, buyMerchHandler.BuyMerch)
+		api.GET("/buy/:item", authMiddleware, buyGoodHandler.BuyGood)
 	}
 }

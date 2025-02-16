@@ -19,21 +19,17 @@ func (r *transactionRepository) Insert(ctx context.Context, transaction *entitie
 	query := `
        INSERT INTO transactions (amount, sender_id, receiver_id) 
        VALUES ($1, $2, $3) 
-       RETURNING id, sender_id, receiver_id, amount
+       RETURNING id
     `
 
-	var insertedTransaction entities.Transaction
 	err := r.db.QueryRow(ctx, query, transaction.Amount, transaction.SenderID, transaction.ReceiverID).Scan(
-		&insertedTransaction.ID,
-		&insertedTransaction.SenderID,
-		&insertedTransaction.ReceiverID,
-		&insertedTransaction.Amount,
+		&transaction.ID,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &insertedTransaction, nil
+	return transaction, nil
 }
 
 func (r *transactionRepository) GetReceivedTransactions(ctx context.Context, userID int) ([]entities.Transaction, error) {

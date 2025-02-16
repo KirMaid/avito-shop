@@ -50,6 +50,7 @@ func (sch *SendCoinsHandler) SendCoins(c *gin.Context) {
 	if err != nil {
 		if errors.Is(err, usecases.ErrInsufficientFunds) {
 			c.JSON(http.StatusBadRequest, gin.H{StatusError: err.Error()})
+			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{StatusError: err.Error()})
 		return

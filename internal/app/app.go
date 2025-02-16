@@ -6,7 +6,7 @@ import (
 	"avitoshop/internal/app/middleware"
 	"avitoshop/internal/app/repositories"
 	auth "avitoshop/internal/app/usecases/auth"
-	buymerch "avitoshop/internal/app/usecases/buy_merch"
+	buygood "avitoshop/internal/app/usecases/buy_good"
 	sendcoins "avitoshop/internal/app/usecases/send_coins"
 	userinfo "avitoshop/internal/app/usecases/user_info"
 	"avitoshop/pkg/httpserver"
@@ -32,7 +32,7 @@ func Run(cfg *config.Config) {
 	userRepo := repositories.NewUserRepository(pg.Pool)
 	inventoryRepo := repositories.NewInventoryRepository(pg.Pool)
 	transactionRepo := repositories.NewTransactionRepository(pg.Pool)
-	merchRepo := repositories.NewMerchRepository(pg.Pool)
+	goodRepo := repositories.NewGoodRepository(pg.Pool)
 
 	//l.Fatal(fmt.Errorf("PasswordRedis: %s", cfg.Redis.Password))
 	redisAddr := fmt.Sprintf("%s:%d", cfg.Redis.Host, cfg.Redis.Port)
@@ -42,10 +42,9 @@ func Run(cfg *config.Config) {
 		cfg.Redis.DB,
 	)
 
-	//TODO Бля откуда брать TTL
 	redisUserRepo := repositories.NewRedisUserRepository(redisClient.Client, 0)
 	redisInventoryRepo := repositories.NewRedisInventoryRepository(redisClient.Client, 0)
-	redisMerchRepo := repositories.NewRedisMerchRepository(redisClient.Client, 0)
+	redisGoodRepo := repositories.NewRedisGoodRepository(redisClient.Client, 0)
 	//redisTransactionRepo := repositories.NewRedisTransactionRepository(redisClient.Client, 5000000)
 
 	if err != nil {
@@ -64,8 +63,10 @@ func Run(cfg *config.Config) {
 		userRepo,
 		inventoryRepo,
 		transactionRepo,
+		goodRepo,
 		redisUserRepo,
 		redisInventoryRepo,
+		redisGoodRepo,
 		//redisTransactionRepo,
 	)
 	sendCoinsUseCase := sendcoins.NewSendCoinsUseCase(
@@ -74,13 +75,13 @@ func Run(cfg *config.Config) {
 		transactionRepo,
 		redisUserRepo,
 	)
-	buyMerchUseCase := buymerch.NewBuyMerchUseCase(
+	buyGoodUseCase := buygood.NewBuyGoodUseCase(
 		pg.Pool,
 		userRepo,
-		merchRepo,
+		goodRepo,
 		inventoryRepo,
 		redisUserRepo,
-		redisMerchRepo,
+		redisGoodRepo,
 		redisInventoryRepo,
 	)
 
@@ -97,7 +98,7 @@ func Run(cfg *config.Config) {
 	authMiddleware := middleware.AuthMiddleware([]byte(cfg.Auth.SigningKey))
 
 	handler := gin.New()
-	http.NewRouter(handler, l, authMiddleware, *authUseCase, *userInfoUseCase, *sendCoinsUseCase, *buyMerchUseCase)
+	http.NewRouter(handler, l, authMiddleware, *authUseCase, *userInfoUseCase, *sendCoinsUseCase, *buyGoodUseCase)
 
 	httpServer := httpserver.New(handler, httpserver.Port(cfg.HTTP.Port))
 

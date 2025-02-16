@@ -6,7 +6,6 @@ import (
 	"avitoshop/pkg/jwt"
 	"context"
 	"errors"
-	"fmt"
 	"time"
 )
 
@@ -42,10 +41,6 @@ func (auc *AuthUseCase) Auth(ctx context.Context, authData *entities.Auth) (stri
 	dbUser, err := auc.redisUserRepo.GetByUsername(ctx, authData.Username)
 
 	if err != nil {
-		if !errors.Is(err, repositories.ErrCacheMiss) && !errors.Is(err, repositories.ErrEmptyCacheData) {
-			return "", fmt.Errorf("failed to get user from Redis: %w", err)
-		}
-
 		dbUser, err = auc.userRepo.GetByUsername(ctx, authData.Username)
 
 		if err != nil {
@@ -54,13 +49,11 @@ func (auc *AuthUseCase) Auth(ctx context.Context, authData *entities.Auth) (stri
 			}
 		}
 
-		if err := auc.redisUserRepo.SetByUsername(ctx, authData.Username, dbUser); err != nil {
-			return "", fmt.Errorf("failed to set user in Redis: %w", err)
-		}
+		//go func() {
+		_ = auc.redisUserRepo.SetByUsername(ctx, authData.Username, dbUser)
+		_ = auc.redisUserRepo.SetById(ctx, dbUser.ID, dbUser)
+		//}()
 	}
-
-	fmt.Printf("Пароль жи есть из БД %s\n\n", dbUser.Password)
-	fmt.Printf("Пароль жи есть хэшированный %s\n\n", hashedPassword)
 
 	if dbUser.Password != hashedPassword {
 		return "", ErrInvalidPassword
@@ -90,8 +83,10 @@ func (auc *AuthUseCase) Register(ctx context.Context, username string, hashedPas
 		return "", err
 	}
 
-	if err := auc.redisUserRepo.SetByUsername(ctx, username, user); err != nil {
-		return "", fmt.Errorf("failed to set user in Redis: %w", err)
-	}
+	//go func() {
+	_ = auc.redisUserRepo.SetByUsername(ctx, username, user)
+	_ = auc.redisUserRepo.SetById(ctx, user.ID, user)
+	//}()
+
 	return token, nil
 }

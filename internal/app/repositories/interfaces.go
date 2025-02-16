@@ -9,23 +9,28 @@ import (
 
 type InventoryRepository interface {
 	GetByUser(ctx context.Context, userID int) ([]entities.Inventory, error)
-	InsertOrUpdate(ctx context.Context, inventory *entities.Inventory) error
+	InsertOrUpdate(ctx context.Context, inventory *entities.Inventory) (*entities.Inventory, error)
 }
 
 type RedisInventoryRepository interface {
 	GetByUser(ctx context.Context, userID int) ([]entities.Inventory, error)
+	InsertOrUpdate(ctx context.Context, inventory *entities.Inventory) error
 	SetByUser(ctx context.Context, userID int, inventory []entities.Inventory) error
 	DeleteByUser(ctx context.Context, userID int) error
 }
 
-type MerchRepository interface {
-	GetList(ctx context.Context) ([]entities.Merch, error)
-	GetByName(ctx context.Context, name string) (*entities.Merch, error)
+type GoodRepository interface {
+	GetByID(ctx context.Context, id int) (*entities.Good, error)
+	GetByIDs(ctx context.Context, goodsIDs []int) ([]entities.Good, error)
+	GetByName(ctx context.Context, name string) (*entities.Good, error)
 }
 
-type RedisMerchRepository interface {
-	GetByName(ctx context.Context, name string) (*entities.Merch, error)
-	SetByName(ctx context.Context, name string, merch *entities.Merch) error
+type RedisGoodRepository interface {
+	GetByID(ctx context.Context, id int) (*entities.Good, error)
+	GetByName(ctx context.Context, name string) (*entities.Good, error)
+	SetByID(ctx context.Context, id int, good *entities.Good) error
+	SetByName(ctx context.Context, name string, good *entities.Good) error
+	GetByIDs(ctx context.Context, goodsIDs []int) ([]entities.Good, error)
 }
 
 type TransactionRepository interface {
@@ -48,13 +53,15 @@ type UserRepository interface {
 	Insert(ctx context.Context, user *entities.User) (*entities.User, error)
 	GetByUsername(ctx context.Context, username string) (*entities.User, error)
 	GetByID(ctx context.Context, userID int) (*entities.User, error)
-	GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, error)
+	GetByIDs(ctx context.Context, userIDs []int) ([]entities.User, error)
 	UpdateBalance(ctx context.Context, userID int, balance int) error
 }
 
 type RedisUserRepository interface {
 	GetByUsername(ctx context.Context, username string) (*entities.User, error)
+	GetById(ctx context.Context, id int) (*entities.User, error)
 	SetByUsername(ctx context.Context, username string, user *entities.User) error
-	DeleteByUsername(ctx context.Context, username string) error
-	GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, error)
+	SetById(ctx context.Context, id int, user *entities.User) error
+	GetByIDs(ctx context.Context, userIDs []int) ([]entities.User, error)
+	GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, []int, error)
 }

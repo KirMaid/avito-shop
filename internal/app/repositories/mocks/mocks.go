@@ -137,154 +137,111 @@ func (mr *MockRedisInventoryRepositoryMockRecorder) SetByUser(ctx, userID, inven
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetByUser", reflect.TypeOf((*MockRedisInventoryRepository)(nil).SetByUser), ctx, userID, inventory)
 }
 
-// MockMerchRepository is a mock of MerchRepository interface.
-type MockMerchRepository struct {
+// MockGoodRepository is a mock of GoodRepository interface.
+type MockGoodRepository struct {
 	ctrl     *gomock.Controller
-	recorder *MockMerchRepositoryMockRecorder
+	recorder *MockGoodRepositoryMockRecorder
 	isgomock struct{}
 }
 
-// MockMerchRepositoryMockRecorder is the mock recorder for MockMerchRepository.
-type MockMerchRepositoryMockRecorder struct {
-	mock *MockMerchRepository
+// MockGoodRepositoryMockRecorder is the mock recorder for MockGoodRepository.
+type MockGoodRepositoryMockRecorder struct {
+	mock *MockGoodRepository
 }
 
-// NewMockMerchRepository creates a new mock instance.
-func NewMockMerchRepository(ctrl *gomock.Controller) *MockMerchRepository {
-	mock := &MockMerchRepository{ctrl: ctrl}
-	mock.recorder = &MockMerchRepositoryMockRecorder{mock}
+// NewMockGoodRepository creates a new mock instance.
+func NewMockGoodRepository(ctrl *gomock.Controller) *MockGoodRepository {
+	mock := &MockGoodRepository{ctrl: ctrl}
+	mock.recorder = &MockGoodRepositoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockMerchRepository) EXPECT() *MockMerchRepositoryMockRecorder {
+func (m *MockGoodRepository) EXPECT() *MockGoodRepositoryMockRecorder {
 	return m.recorder
 }
 
 // GetByName mocks base method.
-func (m *MockMerchRepository) GetByName(ctx context.Context, name string) (*entities.Merch, error) {
+func (m *MockGoodRepository) GetByName(ctx context.Context, name string) (*entities.Good, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByName", ctx, name)
-	ret0, _ := ret[0].(*entities.Merch)
+	ret0, _ := ret[0].(*entities.Good)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByName indicates an expected call of GetByName.
-func (mr *MockMerchRepositoryMockRecorder) GetByName(ctx, name any) *gomock.Call {
+func (mr *MockGoodRepositoryMockRecorder) GetByName(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*MockMerchRepository)(nil).GetByName), ctx, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*MockGoodRepository)(nil).GetByName), ctx, name)
 }
 
 // GetList mocks base method.
-func (m *MockMerchRepository) GetList(ctx context.Context) ([]entities.Merch, error) {
+func (m *MockGoodRepository) GetList(ctx context.Context) ([]entities.Good, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetList", ctx)
-	ret0, _ := ret[0].([]entities.Merch)
+	ret0, _ := ret[0].([]entities.Good)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetList indicates an expected call of GetList.
-func (mr *MockMerchRepositoryMockRecorder) GetList(ctx any) *gomock.Call {
+func (mr *MockGoodRepositoryMockRecorder) GetList(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetList", reflect.TypeOf((*MockMerchRepository)(nil).GetList), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetList", reflect.TypeOf((*MockGoodRepository)(nil).GetList), ctx)
 }
 
-// MockRedisMerchRepository is a mock of RedisMerchRepository interface.
-type MockRedisMerchRepository struct {
+// MockRedisGoodRepository is a mock of RedisGoodRepository interface.
+type MockRedisGoodRepository struct {
 	ctrl     *gomock.Controller
-	recorder *MockRedisMerchRepositoryMockRecorder
+	recorder *MockRedisGoodRepositoryMockRecorder
 	isgomock struct{}
 }
 
-// MockRedisMerchRepositoryMockRecorder is the mock recorder for MockRedisMerchRepository.
-type MockRedisMerchRepositoryMockRecorder struct {
-	mock *MockRedisMerchRepository
+// MockRedisGoodRepositoryMockRecorder is the mock recorder for MockRedisGoodRepository.
+type MockRedisGoodRepositoryMockRecorder struct {
+	mock *MockRedisGoodRepository
 }
 
-// NewMockRedisMerchRepository creates a new mock instance.
-func NewMockRedisMerchRepository(ctrl *gomock.Controller) *MockRedisMerchRepository {
-	mock := &MockRedisMerchRepository{ctrl: ctrl}
-	mock.recorder = &MockRedisMerchRepositoryMockRecorder{mock}
+// NewMockRedisGoodRepository creates a new mock instance.
+func NewMockRedisGoodRepository(ctrl *gomock.Controller) *MockRedisGoodRepository {
+	mock := &MockRedisGoodRepository{ctrl: ctrl}
+	mock.recorder = &MockRedisGoodRepositoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRedisMerchRepository) EXPECT() *MockRedisMerchRepositoryMockRecorder {
+func (m *MockRedisGoodRepository) EXPECT() *MockRedisGoodRepositoryMockRecorder {
 	return m.recorder
 }
 
-// DeleteList mocks base method.
-func (m *MockRedisMerchRepository) DeleteList(ctx context.Context) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteList", ctx)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteList indicates an expected call of DeleteList.
-func (mr *MockRedisMerchRepositoryMockRecorder) DeleteList(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteList", reflect.TypeOf((*MockRedisMerchRepository)(nil).DeleteList), ctx)
-}
-
 // GetByName mocks base method.
-func (m *MockRedisMerchRepository) GetByName(ctx context.Context, name string) (*entities.Merch, error) {
+func (m *MockRedisGoodRepository) GetByName(ctx context.Context, name string) (*entities.Good, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByName", ctx, name)
-	ret0, _ := ret[0].(*entities.Merch)
+	ret0, _ := ret[0].(*entities.Good)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetByName indicates an expected call of GetByName.
-func (mr *MockRedisMerchRepositoryMockRecorder) GetByName(ctx, name any) *gomock.Call {
+func (mr *MockRedisGoodRepositoryMockRecorder) GetByName(ctx, name any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*MockRedisMerchRepository)(nil).GetByName), ctx, name)
-}
-
-// GetList mocks base method.
-func (m *MockRedisMerchRepository) GetList(ctx context.Context) ([]entities.Merch, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetList", ctx)
-	ret0, _ := ret[0].([]entities.Merch)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetList indicates an expected call of GetList.
-func (mr *MockRedisMerchRepositoryMockRecorder) GetList(ctx any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetList", reflect.TypeOf((*MockRedisMerchRepository)(nil).GetList), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*MockRedisGoodRepository)(nil).GetByName), ctx, name)
 }
 
 // SetByName mocks base method.
-func (m *MockRedisMerchRepository) SetByName(ctx context.Context, name string, merch *entities.Merch) error {
+func (m *MockRedisGoodRepository) SetByName(ctx context.Context, name string, good *entities.Good) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetByName", ctx, name, merch)
+	ret := m.ctrl.Call(m, "SetByName", ctx, name, good)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetByName indicates an expected call of SetByName.
-func (mr *MockRedisMerchRepositoryMockRecorder) SetByName(ctx, name, merch any) *gomock.Call {
+func (mr *MockRedisGoodRepositoryMockRecorder) SetByName(ctx, name, good any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetByName", reflect.TypeOf((*MockRedisMerchRepository)(nil).SetByName), ctx, name, merch)
-}
-
-// SetList mocks base method.
-func (m *MockRedisMerchRepository) SetList(ctx context.Context, merch []entities.Merch) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetList", ctx, merch)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetList indicates an expected call of SetList.
-func (mr *MockRedisMerchRepositoryMockRecorder) SetList(ctx, merch any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetList", reflect.TypeOf((*MockRedisMerchRepository)(nil).SetList), ctx, merch)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetByName", reflect.TypeOf((*MockRedisGoodRepository)(nil).SetByName), ctx, name, good)
 }
 
 // MockTransactionRepository is a mock of TransactionRepository interface.
@@ -505,6 +462,21 @@ func (mr *MockUserRepositoryMockRecorder) GetByID(ctx, userID any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByID", reflect.TypeOf((*MockUserRepository)(nil).GetByID), ctx, userID)
 }
 
+// GetByIDs mocks base method.
+func (m *MockUserRepository) GetByIDs(ctx context.Context, userIDs []int) ([]entities.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByIDs", ctx, userIDs)
+	ret0, _ := ret[0].([]entities.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByIDs indicates an expected call of GetByIDs.
+func (mr *MockUserRepositoryMockRecorder) GetByIDs(ctx, userIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIDs", reflect.TypeOf((*MockUserRepository)(nil).GetByIDs), ctx, userIDs)
+}
+
 // GetByUsername mocks base method.
 func (m *MockUserRepository) GetByUsername(ctx context.Context, username string) (*entities.User, error) {
 	m.ctrl.T.Helper()
@@ -518,21 +490,6 @@ func (m *MockUserRepository) GetByUsername(ctx context.Context, username string)
 func (mr *MockUserRepositoryMockRecorder) GetByUsername(ctx, username any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByUsername", reflect.TypeOf((*MockUserRepository)(nil).GetByUsername), ctx, username)
-}
-
-// GetUsernamesByIDs mocks base method.
-func (m *MockUserRepository) GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUsernamesByIDs", ctx, userIDs)
-	ret0, _ := ret[0].(map[int]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUsernamesByIDs indicates an expected call of GetUsernamesByIDs.
-func (mr *MockUserRepositoryMockRecorder) GetUsernamesByIDs(ctx, userIDs any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsernamesByIDs", reflect.TypeOf((*MockUserRepository)(nil).GetUsernamesByIDs), ctx, userIDs)
 }
 
 // Insert mocks base method.
@@ -588,18 +545,19 @@ func (m *MockRedisUserRepository) EXPECT() *MockRedisUserRepositoryMockRecorder 
 	return m.recorder
 }
 
-// DeleteByUsername mocks base method.
-func (m *MockRedisUserRepository) DeleteByUsername(ctx context.Context, username string) error {
+// GetByIDs mocks base method.
+func (m *MockRedisUserRepository) GetByIDs(ctx context.Context, userIDs []int) ([]entities.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteByUsername", ctx, username)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "GetByIDs", ctx, userIDs)
+	ret0, _ := ret[0].([]entities.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// DeleteByUsername indicates an expected call of DeleteByUsername.
-func (mr *MockRedisUserRepositoryMockRecorder) DeleteByUsername(ctx, username any) *gomock.Call {
+// GetByIDs indicates an expected call of GetByIDs.
+func (mr *MockRedisUserRepositoryMockRecorder) GetByIDs(ctx, userIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByUsername", reflect.TypeOf((*MockRedisUserRepository)(nil).DeleteByUsername), ctx, username)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByIDs", reflect.TypeOf((*MockRedisUserRepository)(nil).GetByIDs), ctx, userIDs)
 }
 
 // GetByUsername mocks base method.
@@ -618,12 +576,13 @@ func (mr *MockRedisUserRepositoryMockRecorder) GetByUsername(ctx, username any) 
 }
 
 // GetUsernamesByIDs mocks base method.
-func (m *MockRedisUserRepository) GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, error) {
+func (m *MockRedisUserRepository) GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, []int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetUsernamesByIDs", ctx, userIDs)
 	ret0, _ := ret[0].(map[int]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].([]int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // GetUsernamesByIDs indicates an expected call of GetUsernamesByIDs.

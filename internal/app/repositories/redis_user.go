@@ -3,7 +3,6 @@ package repositories
 import (
 	"avitoshop/internal/app/entities"
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"time"
@@ -43,32 +42,88 @@ func (r *redisUserRepository) GetByUsername(ctx context.Context, username string
 	return &user, nil
 }
 
-func (r *redisUserRepository) GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, error) {
-	keys := make([]string, 0, len(userIDs))
-	for _, id := range userIDs {
-		keys = append(keys, fmt.Sprintf("user:id:%d", id))
-	}
+func (r *redisUserRepository) GetById(ctx context.Context, id int) (*entities.User, error) {
+	key := fmt.Sprintf("user:id:%d", id)
 
-	results, err := r.client.MGet(ctx, keys...).Result()
+	exists, err := r.client.Exists(ctx, key).Result()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get usernames from Redis: %w", err)
+		return nil, fmt.Errorf("failed to check if key exists in Redis: %w", err)
 	}
 
+	if exists == 0 {
+		return nil, ErrCacheMiss
+	}
+
+	res := r.client.HGetAll(ctx, key)
+	if res.Err() != nil {
+		return nil, res.Err()
+	}
+
+	var user entities.User
+	if err := res.Scan(&user); err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func (r *redisUserRepository) GetByIDs(ctx context.Context, userIDs []int) ([]entities.User, error) {
+	//keys := make([]string, 0, len(userIDs))
+	//for _, id := range userIDs {
+	//	keys = append(keys, fmt.Sprintf("user:id:%d", id))
+	//}
+	//
+	//results, err := r.client.MGet(ctx, keys...).Result()
+	//if err != nil {
+	//	return nil, fmt.Errorf("failed to get usernames from Redis: %w", err)
+	//}
+	//
+	//usernames := make(map[int]string)
+	//for i, result := range results {
+	//	if result == nil {
+	//		continue
+	//	}
+	//
+	//	var user entities.User
+	//	if err := json.Unmarshal([]byte(result.(string)), &user); err != nil {
+	//		return nil, fmt.Errorf("failed to unmarshal user: %w", err)
+	//	}
+	//
+	//	usernames[userIDs[i]] = user.Username
+	//}
+	//
+	//return usernames, nil
+	return nil, nil
+}
+
+func (r *redisUserRepository) GetUsernamesByIDs(ctx context.Context, userIDs []int) (map[int]string, []int, error) {
 	usernames := make(map[int]string)
-	for i, result := range results {
-		if result == nil {
+	missingIDs := make([]int, 0)
+	for _, id := range userIDs {
+		key := fmt.Sprintf("user:id:%d", id)
+
+		exists, err := r.client.Exists(ctx, key).Result()
+		if err != nil || exists == 0 {
+			missingIDs = append(missingIDs, id)
 			continue
 		}
 
-		var user entities.User
-		if err := json.Unmarshal([]byte(result.(string)), &user); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal user: %w", err)
+		res := r.client.HGet(ctx, key, "username")
+		if res.Err() != nil {
+			missingIDs = append(missingIDs, id)
+			continue
 		}
 
-		usernames[userIDs[i]] = user.Username
+		var username string
+		if err := res.Scan(&username); err != nil {
+			missingIDs = append(missingIDs, id)
+			continue
+		}
+
+		usernames[id] = username
 	}
 
-	return usernames, nil
+	return usernames, missingIDs, nil
 }
 
 func (r *redisUserRepository) SetByUsername(ctx context.Context, username string, user *entities.User) error {
@@ -88,10 +143,18 @@ func (r *redisUserRepository) SetByUsername(ctx context.Context, username string
 	return nil
 }
 
-func (r *redisUserRepository) DeleteByUsername(ctx context.Context, username string) error {
-	key := fmt.Sprintf("user:%s", username)
-	if err := r.client.Del(ctx, key).Err(); err != nil {
-		return fmt.Errorf("failed to delete user from Redis: %w", err)
+func (r *redisUserRepository) SetById(ctx context.Context, id int, user *entities.User) error {
+	key := fmt.Sprintf("user:id:%d", id)
+
+	err := r.client.HSet(ctx, key, map[string]interface{}{
+		"id":       user.ID,
+		"username": user.Username,
+		"password": user.Password,
+		"balance":  user.Balance,
+	}).Err()
+
+	if err != nil {
+		return fmt.Errorf("failed to set user in Redis: %w", err)
 	}
 
 	return nil

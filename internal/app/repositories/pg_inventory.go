@@ -27,7 +27,7 @@ func (i *inventoryRepository) GetByUser(ctx context.Context, userID int) ([]enti
 		var inventoryItem entities.Inventory
 		if err := rows.Scan(
 			&inventoryItem.UserID,
-			&inventoryItem.Type,
+			&inventoryItem.GoodID,
 			&inventoryItem.Quantity,
 		); err != nil {
 			return nil, fmt.Errorf("failed to scan inventoryItem: %w", err)
@@ -42,16 +42,22 @@ func (i *inventoryRepository) GetByUser(ctx context.Context, userID int) ([]enti
 	return inventory, nil
 }
 
-func (i *inventoryRepository) InsertOrUpdate(ctx context.Context, inventory *entities.Inventory) error {
+func (i *inventoryRepository) InsertOrUpdate(ctx context.Context, inventory *entities.Inventory) (*entities.Inventory, error) {
 	query := `
-		INSERT INTO inventories (user_id, type, quantity)
-		VALUES ($1, $2, $3)
-		ON CONFLICT (user_id, type) DO UPDATE
-		SET quantity = inventories.quantity + EXCLUDED.quantity
+        INSERT INTO inventories (user_id, good_id, quantity)
+        VALUES ($1, $2, $3)
+        ON CONFLICT (user_id, good_id) DO UPDATE
+        SET quantity = inventories.quantity + EXCLUDED.quantity
+        WHERE inventories.quantity + EXCLUDED.quantity >= 0
+	 	RETURNING quantity
 	`
-	_, err := i.db.Exec(ctx, query, inventory.UserID, inventory.Type, inventory.Quantity)
+
+	err := i.db.QueryRow(ctx, query, inventory.UserID, inventory.GoodID, inventory.Quantity).Scan(
+		&inventory.Quantity,
+	)
 	if err != nil {
-		return fmt.Errorf("failed to insert or update inventory: %w", err)
+		return nil, err
 	}
-	return nil
+
+	return inventory, nil
 }
