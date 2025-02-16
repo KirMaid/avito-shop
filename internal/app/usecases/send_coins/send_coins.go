@@ -12,6 +12,7 @@ import (
 
 var ErrSamePersons = errors.New("sender and receiver username cannot be the same")
 var ErrAmountMustBePositive = errors.New("amount must be positive")
+var ErrFailedToGetReceiver = errors.New("failed to get receiver")
 
 type SendCoinsUseCase struct {
 	dbPool               *pgxpool.Pool
@@ -62,7 +63,7 @@ func (uc *SendCoinsUseCase) SendCoins(
 
 	receiver, err := uc.getUser(ctx, receiverUsername)
 	if err != nil {
-		return fmt.Errorf("failed to get receiver: %w", err)
+		return ErrFailedToGetReceiver
 	}
 
 	transaction := &entities.Transaction{

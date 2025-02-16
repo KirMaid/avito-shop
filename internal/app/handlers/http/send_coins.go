@@ -5,9 +5,17 @@ import (
 	sendcoins "avitoshop/internal/app/usecases/send_coins"
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strconv"
 )
+
+var badRequestErrors = []error{
+	usecases.ErrInsufficientFunds,
+	sendcoins.ErrAmountMustBePositive,
+	sendcoins.ErrSamePersons,
+	sendcoins.ErrFailedToGetReceiver,
+}
 
 type SendCoinsHandler struct {
 	sendCoinsUseCase sendcoins.SendCoinsUseCase
@@ -32,16 +40,16 @@ func (sch *SendCoinsHandler) SendCoins(c *gin.Context) {
 
 	var request struct {
 		ToUser string `json:"toUser" binding:"required"`
-		Amount string `json:"amount" binding:"required"`
+		Amount string `json:"amount" binding:"required,number"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{StatusError: ErrInvalidRequestBody})
-		return
-	}
-
-	if request.ToUser == "" || request.Amount == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "toUser and amount are required"})
+		var ve validator.ValidationErrors
+		if errors.As(err, &ve) {
+			c.JSON(http.StatusBadRequest, gin.H{StatusError: "Invalid input"})
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{StatusError: ErrInvalidRequestBody.Error()})
+		}
 		return
 	}
 
@@ -53,9 +61,11 @@ func (sch *SendCoinsHandler) SendCoins(c *gin.Context) {
 
 	err = sch.sendCoinsUseCase.SendCoins(c.Request.Context(), senderUsername, request.ToUser, amount)
 	if err != nil {
-		if errors.Is(err, usecases.ErrInsufficientFunds) || errors.Is(err, sendcoins.ErrAmountMustBePositive) || errors.Is(err, sendcoins.ErrSamePersons) {
-			c.JSON(http.StatusBadRequest, gin.H{StatusError: err.Error()})
-			return
+		for _, targetErr := range badRequestErrors {
+			if errors.Is(err, targetErr) {
+				c.JSON(http.StatusBadRequest, gin.H{StatusError: err.Error()})
+				return
+			}
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{StatusError: err.Error()})
 		return
